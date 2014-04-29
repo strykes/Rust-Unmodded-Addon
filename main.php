@@ -46,9 +46,9 @@ while ($conn > 0)
 		  chat_cmd($output[1],$output[2]);
 	  }
 	  // CONNECTION HOOK
-	  elseif(preg_match('/^[A-Za-z]{4}\W[A-Za-z]{9}\W\W(.*?)\W([0-9]{17})\W$/',$receive,$output))
+	  elseif(preg_match('/^[A-Za-z]{4}\W[A-Za-z]{9}\W\W(.*?)\W\W([0-9]{17})\W$/',$receive,$output))
 	  {
-		  onuserconnect($output[1],$output[2]);  
+		  onuserconnect($output[1],$output[2]);
 	  }
 	  elseif(strpos($receive,"User Disconnected:")===0)
 	  {
@@ -100,7 +100,7 @@ function parsestatus($data)
 		$tempname = $playerlist[substr($playerdata,0,17)]["name"];
 		$tempname = substr($tempname,0,strrpos($tempname,'"'));
 		$playerlist[substr($playerdata,0,17)]["name"] = $tempname;
-		if($admins[substr($playerdata,0,17)])
+		if(isset($admins[substr($playerdata,0,17)]) && $admins[substr($playerdata,0,17)])
 			$playerlist[substr($playerdata,0,17)]["isadmin"] = true;
 		else
 			$playerlist[substr($playerdata,0,17)]["isadmin"] = false;
@@ -109,13 +109,14 @@ function parsestatus($data)
 }
 function onuserconnect($name,$steamid)
 {
-	global $admins;
+	global $admins,$playerlist;
+	$playerlist[$steamid] = array();
 	if($admins[$steamid])
-		$playerlist[$steamid] = array("isadmin"=>true);
+		$playerlist[$steamid]["isadmin"]=true;
 	else
-		$playerlist[$steamid] = array("isadmin"=>false);
+		$playerlist[$steamid]["isadmin"]=false;
 	sendcmd("say \"". $name. " has joined the game\"");	
-	$playerlist[$steamid] = array("name"=>$name);
+	$playerlist[$steamid]["name"] = $name;
 }
 function onuserdisconnect($name)
 {
@@ -145,8 +146,11 @@ function isadmin($name)
 	global $playerlist,$admins;
 	$found = 0;
 	$foundsteam = false;
+	print_r($playerlist);
+	print($name);
 	foreach($playerlist as $steam => $info)
 	{
+		print_r($info["name"]);
 		if($info["name"] == $name)
 		{
 			$found++;
@@ -158,6 +162,9 @@ function isadmin($name)
 		return false;
 		//if the admin share the same name as another user => ignore
 	}
+	elseif($found == 0)
+		return false;
+	print($foundsteam);
 	if($playerlist[$foundsteam]["isadmin"])
 		return true;
 	return false;
