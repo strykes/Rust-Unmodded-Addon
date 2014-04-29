@@ -1,0 +1,48 @@
+#!/bin/bash
+
+NAME=rust_addon_server_n1
+DIR=/home/rust/addon/
+
+
+# -------------------------------------------------------------------
+case "$1" in
+    start)
+		echo "Error: Start command has been removed, use %0 restart"
+    ;;
+    stop)
+        if [[ `screen -ls |grep $NAME` ]]
+        then
+            kill `screen -ls |grep $NAME |awk -F . '{print $1}'|awk '{print $1}'`
+            echo "$NAME was stopped"
+        else
+            echo "Error: $NAME isn't currently running"
+        fi
+    ;;
+    status)
+        if [[ `screen -ls |grep $NAME` ]]
+        then
+            echo "$NAME is currently running"
+        else
+            echo "$NAME is NOT running"
+        fi
+    ;;
+	restart)
+	    if [[ `screen -ls |grep $NAME` ]]
+        then
+            kill `screen -ls |grep $NAME |awk -F . '{print $1}'|awk '{print $1}'`
+            echo "$NAME was stopped"
+        else
+            echo "Error: $NAME isn't currently running"
+        fi
+		cd $DIR
+		screen -S $NAME -d -m bash -c "php main.php"
+		
+        echo "$NAME was started."
+	;;
+    *)
+        echo "Usage: $0 {stop|status|restart}"
+        exit 1
+    ;;
+esac
+
+exit 0
