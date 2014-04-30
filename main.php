@@ -1,224 +1,295 @@
 <?php
-include("commands.php");
-include("config.php");
 
-try
+function chat_cmd($name,$text)
 {
-	$conn = @fsockopen($config["server_ip"], $config["server_queryport"], $errno, $errstr, 2);
-}
-catch (Exception $err) { }
-
-$started = false;
-$serverinfo = array();
-$playerlist = array();
-
-$data = pack("VV",1,03).$config["server_rcon"].chr(0).''.chr(0);
-$data = pack("V",strlen($data)).$data;
-fwrite($conn, $data, strlen($data));
-
-while ($conn > 0) 
-{
-	$receive = false;
-	$size = @fread($conn, 4);
-	if(connection_aborted())
+	global $playerlist;
+	$chr = explode(" ",$text);
+	$apos = false;
+	$args = array();
+	$i = 0;
+	foreach($chr as $cid => $val)
 	{
-		echo "disconnected";
-		break;
-	}
-	if(strlen($size)>=4)
-	  $size = unpack('V1Size',$size);
-	if(isset($size) && isset($size["Size"]))
-	{
-	  if ($size["Size"] > 4096)
-		$packet = "\x00\x00\x00\x00\x00\x00\x00\x00".fread($conn, 4096);
-	  elseif ($size["Size"]>0)
-		$packet = fread($conn, $size["Size"]);
-	}
-	if(strlen($packet)>=4)
-	{
-	  $toret = unpack("V1ID/V1Reponse/a*S1/a*S2",$packet);
-	  if(isset($toret["S1"]) && ($toret["Reponse"]==0)) $receive = $toret["S1"];
-	  echo $receive."\n";
-	  $line = explode("\n",$receive);
-	  // CHAT COMMAND HOOK
-	  if(preg_match('/\W[C][H][A][T]\W\W\W(.*?)\W\W\W\/(.*?)\W$/',$receive,$output))
-	  {
-		  chat_cmd($output[1],$output[2]);
-	  }
-	  // CONNECTION HOOK
-	  elseif(preg_match('/^[A-Za-z]{4}\W[A-Za-z]{9}\W\W(.*?)\W\W([0-9]{17})\W$/',$receive,$output))
-	  {
-		  onuserconnect($output[1],$output[2]);
-	  }
-	  elseif(strpos($receive,"User Disconnected:")===0)
-	  {
-		  onuserdisconnect(substr($receive,19));  
-	  }
-	  elseif(isset($line) && isset($line[0]) && (strpos($line[0],"hostname:")===0))
-	  {
-		parsestatus($line);
-	  }
-	  elseif($receive == "OnDestroy")
-	  {
-		print("Server Shutdown");
-		break;  
-	  }
-	}
-	if(!$started)
-	{
-		sendcmd("status");
-		$started = true;
-	}
-	$packet = false;
-	$line = array();
-	//usleep(50000);
-}
-function parsestatus($data)
-{
-	global $playerlist,$admins;
-	foreach($data as $did => $line)
-	{
-		if(strpos($line,"hostname")===0)
-			$serverinfo["hostname"] = substr($line,10);
-		if(strpos($line,"version")===0)
-			$serverinfo["version"] = substr($line,10);
-		if(strpos($line,"map")===0)
-			$serverinfo["map"] = substr($line,10);
-		if(strpos($line,"players")===0)
-			$serverinfo["players"] = substr($line,10);
-	}
-	$playerlistarray = array_slice($data,6,count($data)-8);
-	$playerlist = array();
-	foreach($playerlistarray as $pid => $playerdata)
-	{
-		$tempname = false;
-		$playerlist[substr($playerdata,0,17)] = array(
-		"name" => substr($playerdata,19,36),
-		"ping"=>substr($playerdata,56,4),
-		"connected"=>substr($playerdata,62,11),
-		"ip"=>substr($playerdata,74,15));
-		$tempname = $playerlist[substr($playerdata,0,17)]["name"];
-		$tempname = substr($tempname,0,strrpos($tempname,'"'));
-		$playerlist[substr($playerdata,0,17)]["name"] = $tempname;
-		if(isset($admins[substr($playerdata,0,17)]) && $admins[substr($playerdata,0,17)])
-			$playerlist[substr($playerdata,0,17)]["isadmin"] = true;
+		if($cid == 0) $args[0] = $val;
 		else
-			$playerlist[substr($playerdata,0,17)]["isadmin"] = false;
-			
-	}
-}
-function onuserconnect($name,$steamid)
-{
-	global $admins,$playerlist;
-	$playerlist[$steamid] = array();
-	if($admins[$steamid])
-		$playerlist[$steamid]["isadmin"]=true;
-	else
-		$playerlist[$steamid]["isadmin"]=false;
-	sendcmd("say \"". $name. " has joined the game\"");	
-	$playerlist[$steamid]["name"] = $name;
-}
-function onuserdisconnect($name)
-{
-	global $playerlist;
-	$found = findplayer($name);
-	if(!is_array($found))
-		sendcmd("status");	
-	else
-	{	
-		$playerlist[$found["steam"]] = NULL;
-	}
-	sendcmd("say \"". $name. " has left the game\"");	
-}
-function sendcmd($cmd)
-{
-	global $conn,$config;
-	$data = pack("VV",1,02).$cmd.chr(0).''.chr(0);
-	$data = pack("V",strlen($data)).$data;
-	fwrite($conn, $data, strlen($data));
-	
-	$data = pack("VV",1,03).$config["server_rcon"].chr(0).''.chr(0);
-	$data = pack("V",strlen($data)).$data;
-	fwrite($conn, $data, strlen($data));
-}
-function isadmin($name)
-{
-	global $playerlist,$admins;
-	$found = 0;
-	$foundsteam = false;
-	print_r($playerlist);
-	print($name);
-	foreach($playerlist as $steam => $info)
-	{
-		print_r($info["name"]);
-		if($info["name"] == $name)
 		{
-			$found++;
-			$foundsteam = $steam;
-		}
+			if($apos)
+				$args[$i] = $args[$i]." ".$val;
+			else
+			{
+				$i++;
+				$args[$i] = $val;
+			}
+			if((strpos($val,'\"') === 0) && (!$apos)) 
+			{
+				$apos = true;
+				$args[$i] = substr($val,2);
+			}
+			if( ((strpos($val,'\"',strlen($val)-2)) || ($val == '\"')) && ($apos))
+			{
+				$apos = false;
+				$args[$i] = substr($args[$i],0,strlen($args[$i])-2);
+			}
+		}		
 	}
-	if($found>1)
+	switch($args[0])
 	{
-		return false;
-		//if the admin share the same name as another user => ignore
-	}
-	elseif($found == 0)
-		return false;
-	print($foundsteam);
-	if($playerlist[$foundsteam]["isadmin"])
-		return true;
-	return false;
-}
-function findplayer($name)
-{
-	global $playerlist;
-	$found = 0;
-	$foundsteam = false;
-	$foundname = false;
-	$foundexactcase = false;
-	$foundexactnocase = false;
-	if(is_numeric($name) && strlen($name==17))
-	{
-		$found = 1;
-		$foundsteam = $name;	
-	}
-	else
-	{
-		foreach($playerlist as $steam => $info)
+		case "day":
+			if(isallowed($name,GetVar("day")))
+				sendcmd("env.time 12");
+		break;
+		case "night":
+			if(isallowed($name,GetVar("night")))
+				sendcmd("env.time 24");
+		break;
+		case "time":
+			if(isallowed($name,GetVar("time")))
+			{
+				if(isset($args[1]) && is_numeric($args[1]))
+					sendcmd("env.time ".$args[1]);
+			}
+		break;
+		case "kick":
+		case "k":
+			if(isallowed($name,GetVar("kick")))
+			{
+				$reason = "";
+				if(isset($args[1]))
+				{
+					$found = findplayer($args[1]);
+					if(!is_array($found))
+					{
+						sendcmd("say \"".$found."\"");
+					}
+					else
+					{
+						sendcmd("kick \"".$found["steam"]."\"");
+						sendcmd("notice.popupall \"".$found["name"]." was kicked");
+					}
+				}
+			}
+		break;
+		case "ban":
+		case "b":
+			if(isallowed($name,GetVar("ban")))
+			{
+				$reason = "";
+				if(isset($args[1]))
+				{
+					$found = findplayer($args[1]);
+					if(!is_array($found))
+					{
+						sendcmd("say \"".$found."\"");
+					}
+					else
+					{
+						if(isset($args[2])) $reason = "(".implode(" ",array_slice($args,2)).")";
+						//sendcmd("kick \"".$steam."\"");
+						sendcmd("banid \"".$found["steam"]."\" \"".$reason."\"");
+						sendcmd("kick \"".$found["steam"]."\"");
+						sendcmd("notice.popupall \"".$found["name"]." was banned ".$reason."\"");
+					}
+				}
+			}
+		break;
+		case "who":
+			if(isallowed($name,GetVar("who")))
+			{
+				if(count($playerlist)>1)
+					sendcmd("say \"There is currently ".count($playerlist)." players\"");
+				else
+					sendcmd("say \"You are the only player online at the moment\"");
+			}
+		
+		break;
+		case "tp":
+			if(isallowed($name,GetVar("tp")))
+			{
+				$reason = "";
+				$found2 = false;
+				if(isset($args[1]))
+				{
+					$found = findplayer($args[1]);
+					if(isset($args[2]))
+					{
+						$found2 = findplayer($args[2]);
+					}
+					if(!is_array($found))
+					{
+						sendcmd("say \"".$found."\"");
+						return;
+					}
+					if($found2!==false && !is_array($found2))
+					{
+						sendcmd("say \"".$found."\"");
+						return;
+					}
+					if(!$found2)
+						sendcmd("teleport.toplayer \"".$name."\" \"".$found["steam"]."\"");
+					else
+						sendcmd("teleport.toplayer \"".$found["steam"]."\" \"".$found2["steam"]."\"");					
+				}
+			}
+		break;
+		case "bring":
+			if(isallowed($name,GetVar("bring")))
+			{
+				$reason = "";
+				if(isset($args[1]))
+				{
+					$found = findplayer($args[1]);
+					if(!is_array($found))
+					{
+						sendcmd("say \"".$found."\"");
+						return;
+					}
+					sendcmd("teleport.toplayer \"".$found["steam"]."\" \"".$name."\"");					
+				}
+			}
+		break;
+		case "slay":
+		case "kill":
+		if(isallowed($name,GetVar("slay")))
 		{
-			if($info["name"]===$name)
+			$reason = "";
+			if(isset($args[1]))
 			{
-				$found++;
-				$foundexactcase = true;
-				$foundsteam = $steam;
-				$foundname = $info["name"];
-				print("found exact with case sensibility");
-			}
-			elseif((strtolower($info["name"])==strtolower($name)) and (!$foundexactcase))
-			{
-				$found++;
-				$foundexactnocase = true;
-				$foundsteam = $steam;
-				$foundname = $info["name"];
-				print("found exact with NO case sensibility");
-			}
-			elseif((strpos($info["name"],$name)!==false) and (!$foundexactcase) and (!$foundexactnocase))
-			{
-				$found++;
-				$foundsteam = $steam;
-				$foundname = $info["name"];
-				print("found partial name");
+				$found = findplayer($args[1]);
+				if(!is_array($found))
+				{
+					sendcmd("say \"".$found."\"");
+					return;
+				}
+				if((GetVar("slay.x") != 0) && (GetVar("slay.y") != 0) && (GetVar("slay.z") != 0))
+				{
+					sendcmd("teleport.topos \"".$found["steam"]."\" \"".GetVar("slay.x")."\" \"".GetVar("slay.y")."\" \"".GetVar("slay.z")."\"");
+					sendcmd("say \"".$found["name"]." was [color #FF3333]slayed[color #FFFFFF] by the admin\"");
+				}	
+				else sendcmd("say \"But no slay ground was found\"");			
 			}
 		}
+		break;
+		case "jail":
+			if(isallowed($name,GetVar("jail")))
+			{
+				$reason = "";
+				if(isset($args[1]))
+				{
+					$found = findplayer($args[1]);
+					if(!is_array($found))
+					{
+						sendcmd("say \"".$found."\"");
+						return;
+					}
+					$searchjailed = GetJailed($found["steam"]);
+					print($searchjailed);
+					if($searchjailed === 0)
+					{
+						sendcmd("say \"".$found['name']." has been [color #FF3333]arrested[color #FFFFFF] by an admin\"");
+						file_put_contents("jailed.ini",$found['steam']." = ".$found['name']."\n",FILE_APPEND);
+						if((GetVar("jail.x") != 0) && (GetVar("jail.y") != 0) && (GetVar("jail.z") != 0))
+						{
+							sendcmd("teleport.topos \"".$found["steam"]."\" \"".GetVar("jail.x")."\" \"".GetVar("jail.y")."\" \"".GetVar("jail.z")."\"");
+						}
+						else sendcmd("say \"But no jail was found\"");
+					}
+					else
+					{
+						$jailtext = file_get_contents("jailed.ini");
+						$jail_ = explode("\n",$jailtext);
+						$newjail = array();
+						foreach($jail_ as $jl => $j)
+						{
+							if(strpos($j,$found["steam"])===0) ;
+							else
+								$newjail[] = $j;
+						}
+						file_put_contents("jailed.ini",implode("\n",$newjail));
+						if((GetVar("free.x") != 0) && (GetVar("free.y") != 0) && (GetVar("free.z") != 0))
+						{
+							sendcmd("teleport.topos \"".$found["steam"]."\" \"".GetVar("free.x")."\" \"".GetVar("free.y")."\" \"".GetVar("free.z")."\"");
+						}	
+						sendcmd("say \"".$found['name']." has been [color #00FF33]freed[color #FFFFFF] from jail\"");
+					}
+				}
+			}
+		break;
+		case "scream":
+			if(isallowed($name,GetVar("scream")))
+			{
+				$text = implode(" ",array_slice($args,1));
+				sendcmd("say \"[color #6293E8]".$text."\"");
+				sendcmd("say \"[color #EE5151]".$text."\"");
+				sendcmd("say \"[color #B93CA8]".$text."\"");
+				sendcmd("say \"[color #3CB946]".$text."\"");
+				sendcmd("say \"".$text."\"");
+				sendcmd("notice.popupall \"".$text."\"");
+			}
+		break;
+		case "give":
+			if(isallowed($name,GetVar("give")))
+			{
+				if(!isset($args[1]) or !isset($args[2]))
+					return;
+				if(!isset($args[3]))
+				{
+					$found = array("name"=>$name);	
+					$item = $args[1];
+					$num = $args[2];
+				}
+				else
+				{
+					$found = findplayer($args[1]);
+					if(!is_array($found))
+					{
+						sendcmd("say \"".$found."\"");
+						return;
+					}
+					$item = $args[2];
+					$num = $args[3];
+				}
+				sendcmd("inv.giveplayer \"".$found["name"]."\" \"".$item."\" \"".$num."\"");
+			}
+		break;
+		case "pvp":
+			if(isallowed($name,GetVar("pvp")))
+			{
+				if(isset($args[1]))
+				{
+					if(($args[1] == "on") or ($args[1] == "true"))
+					{
+						sendcmd("server.pvp true");
+						sendcmd("say \"PVP has been activated\"");
+					}
+					elseif(($args[1] == "off") or ($args[1] == "false"))
+					{
+						sendcmd("server.pvp false");
+						sendcmd("say \"PVP has been deactivated\"");
+					}
+					else
+					{
+						sendcmd("say \"Usage: /pvp on/off\"");
+					}
+				}
+			}
+		break;
+		case "a":
+		case "admintest":
+			if(isadmin($name))
+				sendcmd("say \"".$name." you are an admin\"");
+			else
+			{
+				sendcmd("say \"".$name." you are an not an admin, using admin commands will result in a warning\"");
+			}
+		break;
+		case "help":
+			sendcmd("say \"This server is not modded, no commands will work here\"");
+		break;
+		default:
+			//sendcmd("say \"Command not found\"");
+		break;
+		
 	}
-	if($found>1)
-	{
-		return "Multiple Match for ".$name;	
-	}
-	if($found == 0)
-	{
-		return "No Match found for ".$name;	
-	}
-	return array("steam"=>$foundsteam,"name"=>$foundname);
 }
+
+
 ?>
