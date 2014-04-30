@@ -1,7 +1,7 @@
-Rust-Unmodded-Addon 0.1 <br>
-=================== <br>
- <br>
-Php Addon for Unmodded Rust servers <br>
+Rust-Unmodded-Addon 0.1
+===================
+
+Php Addon for Unmodded Rust servers
  <br>
 You can launch it with any platform that uses php, it doesn't need to be on the same host as the server. <br>
  <br>
