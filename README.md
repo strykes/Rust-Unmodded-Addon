@@ -49,6 +49,7 @@ Modules:<br>
 - Broadcast connections (choose in settings to activate/deactivate the broadcast of connections/disconnections)<br>
 - Restricted names (Choose what names or characters should be restricted, in settings/restricted_names.php)<br>
 - Restricted dual names (Auto kick players who uses the same names, admins are immuned, it will kick the connected player if that player stole the admins name)<br>
+
 Logger:<br>
 - Log Chat (choose to log chat in a file)
 - Log Connections (choose to log connections in a file)
