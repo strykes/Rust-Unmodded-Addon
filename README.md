@@ -1,4 +1,4 @@
-Rust-Unmodded-Addon
+Rust-Unmodded-Addon 0.1
 ===================
 
 Php Addon for Unmodded Rust servers
@@ -25,3 +25,16 @@ The console will then show on your screen.
 I haven't found a way to make it launch in background yet (if anybody has any ideas they are welcomed)
 
 
+Current commands:
+all player names can be partial
+
+/help
+/who => shows how many players are on
+/tp PLAYER/STEAMCOMMUNITYID (to teleport to a player)
+/bring PLAYER/STEAMCOMMUNITYID (to bring someone to you)
+/kick PLAYER/STEAMCOMMUNITYID (to kick someone)
+/ban PLAYER/STEAMCOMMUNITYID REASON (to ban and kick someone)
+/day (changes time to day)
+/night (changes time to night)
+/time XX (sets the time to any time you want)
+/scream TEXT (screams and spams the chat)
