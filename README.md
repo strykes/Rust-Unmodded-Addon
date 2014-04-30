@@ -41,10 +41,11 @@ all player names can be partial <br>
 
 NEW Version 0.2<br>
 Commands:<br>
-/jail PLAYER/STEAMCOMMUNITYID (Put someone in jail, need to set in settings.php) <br>
-/slay PLAYER/STEAMCOMMUNITYID (Put teleport that person into the bottom of the sea, killing him, need to set in settings.php) <br>
-/give <optional: PLAYER/STEAMCOMMUNITYID> "Item" "Quantity" (Give yourself or someone some stuff) <br>
-/admintest (Check if you are an admin) <br>
+- /jail PLAYER/STEAMCOMMUNITYID (Put someone in jail, need to set in settings.php) <br>
+- /slay PLAYER/STEAMCOMMUNITYID (Put teleport that person into the bottom of the sea, killing him, need to set in settings.php) <br>
+- /give <optional: PLAYER/STEAMCOMMUNITYID> "Item" "Quantity" (Give yourself or someone some stuff) <br>
+- /admintest (Check if you are an admin) <br>
+
 Modules:<br>
 - Broadcast connections (choose in settings to activate/deactivate the broadcast of connections/disconnections)<br>
 - Restricted names (Choose what names or characters should be restricted, in settings/restricted_names.php)<br>
