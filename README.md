@@ -1,4 +1,4 @@
-Rust-Unmodded-Addon 0.2
+Rust-Unmodded-Addon 0.2.1
 ===================
 
 Php Addon for Unmodded Rust servers
