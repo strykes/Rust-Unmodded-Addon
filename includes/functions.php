@@ -32,7 +32,7 @@ function GetVar($var)
 }
 function GetJailed($var)
 {  
-  $file = fopen("settings/jailed.ini",'r');
+  $file = fopen("jailed.ini",'r');
 
   if(!$file)
   return 0;
@@ -271,7 +271,13 @@ function onuserdisconnect($name)
 	if(GetVar("broadcast_connections") == 1)
 		sendcmd("say \"". $name. " has left the game\"");	
 }
-
+function sendautomessage()
+{
+	global $config;
+	$tot = count($config["automessages"])-1;
+	$rand = rand(0,$tot);
+	sendcmd("say \"".addslashes($config["automessages"][$rand])."\"");
+}
 
 
 ?>
