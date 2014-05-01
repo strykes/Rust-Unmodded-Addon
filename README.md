@@ -54,3 +54,7 @@ Modules:<br>
 Logger:<br>
 - Log Chat (choose to log chat in a file)
 - Log Connections (choose to log connections in a file)
+
+NEW Version 0.2.1<br>
+Modules:<br>
+- Auto-messages (Automatic messages every X seconds, see settings to set everything)
