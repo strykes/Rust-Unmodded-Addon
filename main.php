@@ -3,6 +3,7 @@ include("includes/commands.php");
 include("includes/functions.php");
 include("settings/config.php");
 include("settings/restricted_names.php");
+include("settings/automessages.php");
 
 try
 {
@@ -19,6 +20,10 @@ $data = pack("VV",1,03).$config["server_rcon"].chr(0).''.chr(0);
 $data = pack("V",strlen($data)).$data;
 fwrite($conn, $data, strlen($data));
 sendcmd("say \"[color #9999FF]Addon was successfully started\"");	
+
+if(GetVar("automessages")==1)
+	$timers[] = array("time"=>time()+GetVar("automessages_timers"),"repeat_time"=>GetVar("automessages_timers"),"function"=>"sendautomessage","isarray"=>false,"repeat"=>true,"args"=>"");
+
 while ($conn > 0) 
 {
 	$receive = false;
@@ -91,16 +96,16 @@ while ($conn > 0)
 	{
 		if(time() >= $intel["time"])
 		{
-			if(isset($playerlist[$intel["steam"]]))
-			{
+			//if(isset($playerlist[$intel["steam"]]))
+			//{
 				if($intel["isarray"])
 					call_user_func_array($intel["function"],$intel["args"]);
 				else
 					call_user_func($intel["function"],$intel["args"]);
 				if(!$intel["repeat"]) unset($timers[$tid]);
-				else $intel["time"] = time() + $intel["repeat_time"];
-			}
-			else unset($timers[$tid]);
+				else $timers[$tid]["time"] = time() + $intel["repeat_time"];
+			//}
+			//else unset($timers[$tid]);
 		}
 	}
 }
