@@ -208,8 +208,11 @@ function onuserconnect($name,$steamid)
 {
 	global $admins,$playerlist,$config,$timers;
 	$playerlist[$steamid] = array();
-	if($admins[$steamid])
-		$playerlist[$steamid]["isadmin"]=true;
+	if(isset($admins[$steamid]))
+		if($admins[$steamid])
+			$playerlist[$steamid]["isadmin"]=true;
+		else
+		$playerlist[$steamid]["isadmin"]=false;
 	else
 		$playerlist[$steamid]["isadmin"]=false;
 
