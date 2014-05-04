@@ -2,7 +2,7 @@
 
 function chat_cmd($name,$text)
 {
-	global $playerlist;
+	global $playerlist,$event;
 	$chr = explode(" ",$text);
 	$apos = false;
 	$args = array();
@@ -24,7 +24,7 @@ function chat_cmd($name,$text)
 				$apos = true;
 				$args[$i] = substr($val,2);
 			}
-			if( ((strpos($val,'\"',strlen($val)-2)) || ($val == '\"')) && ($apos))
+			if( strlen($val)>1 && ((strpos($val,'\"',strlen($val)-2)) || ($val == '\"')) && ($apos))
 			{
 				$apos = false;
 				$args[$i] = substr($args[$i],0,strlen($args[$i])-2);
@@ -226,6 +226,7 @@ function chat_cmd($name,$text)
 			}
 		break;
 		case "give":
+		case "reward":
 			if(isallowed($name,GetVar("give")))
 			{
 				if(!isset($args[1]) or !isset($args[2]))
@@ -283,6 +284,108 @@ function chat_cmd($name,$text)
 		break;
 		case "help":
 			sendcmd("say \"This server is not modded, no commands will work here\"");
+		break;
+		case "event":
+			if(isadmin($name))
+			{
+				if(!isset($args[1])) return;
+				if($args[1]=="start")
+				{
+					if(isset($event["opened"]) && $event["opened"])
+					{	
+						$event["opened"] = false;
+						$event["started"] = true;
+						sendcmd("say \"[color #488FAD][EVENT] ".$event["name"]." - ".$event["description"]." [color #FFFFFF]Is now starting, you can not join any more.\"");
+						if($event["killonstart"])
+						{
+							sendcmd("say \"[color #488FAD][EVENT] ".$event["name"]."[color #FFFFFF]You will all die, respawn at camp to start playing!\"");
+							foreach($event["players"] as $pi => $player)
+								sendcmd("teleport.topos \"".$player."\" \"".GetVar("slay.x")."\" \"".GetVar("slay.y")."\" \"".GetVar("slay.z")."\"");
+						}
+						sendcmd("say \"[color #488FAD][EVENT] ".$event["name"]." Goal: [color #FFFFFF]".$event["goal"]."\"");
+						
+					}
+				}
+				elseif(($args[1]=="stop") || ($args[1]=="end"))
+				{
+					if(isset($event["started"]) && $event["started"])
+					{	
+						$event["opened"] = false;
+						$event["started"] = false;
+						sendcmd("say \"[color #488FAD][EVENT] ".$event["name"]." [color #FFFFFF]Is now over.\"");
+						foreach($event["players"] as $pi => $player)
+						{
+							sendcmd("teleport.topos \"".$player."\" \"".GetVar("slay.x")."\" \"".GetVar("slay.y")."\" \"".GetVar("slay.z")."\"");
+						}
+						$event = array();
+					}	
+				}
+				else
+				{
+					$data = file_get_contents("events/".$args[1].".txt");
+					if($data !== false)
+					{
+						$event = array();
+						$event["started"] = false;
+						$event["opened"] = true;
+						$event["name"] = "Unknown";
+						$event["description"] = "Unknown";
+						$event["goal"] = "Unknown";
+						$event["spawns"] = array();
+						$event["players"] = array();
+						$event["killonstart"] = false;
+						$event["lastspawn"] = -1;
+						$d_ = explode("\n",$data);
+						foreach($d_ as $l => $line)
+						{
+							$l_ = explode("=",$line);
+							switch($l_[0])
+							{
+								case "name":
+								case "description":
+								case "goal":
+								case "killonstart":
+									$event[$l_[0]] = $l_[1];
+								break;	
+								case "spawn":
+									$event["spawns"][] = $l_[1];
+								break;
+							}
+						}
+						sendcmd("say \"[color #488FAD][EVENT][color #FFFFFF] ".$event["name"]." is about to start, say /join to join the event, empty your inventory\"");
+						sendcmd("say \"Please do not start fighting until the admin says that you can\"");
+						sendcmd("notice.popupall \"/join to join the event\"");
+					}
+				}
+			}	
+		break;
+		case "j":
+		case "join":
+			if(isset($event["opened"]) && $event["opened"])
+			{
+				if(!in_array($name,$event["players"]))
+				{
+					$event["players"][] = $name;
+					if($event["lastspawn"]>=(count($event["spawns"])-1))
+						$event["lastspawn"] = 0;
+					else $event["lastspawn"]++;
+					sendcmd("teleport.topos ".$name." ".$event["spawns"][$event["lastspawn"]]);
+				}
+			}
+		break;
+		case "leave":
+		case "l":
+		if(in_array($name,$event["players"]))
+		{
+			if((GetVar("slay.x") != 0) && (GetVar("slay.y") != 0) && (GetVar("slay.z") != 0))
+			{
+				foreach($event["players"] as $ei => $playername)
+				{
+					if($name == $playername) unset($event["players"][$ei]);	
+				}
+				sendcmd("teleport.topos \"".$name."\" \"".GetVar("slay.x")."\" \"".GetVar("slay.y")."\" \"".GetVar("slay.z")."\"");
+			}	
+		}
 		break;
 		default:
 			//sendcmd("say \"Command not found\"");
