@@ -58,3 +58,27 @@ Logger:<br>
 NEW Version 0.2.1<br>
 Modules:<br>
 - Auto-messages (Automatic messages every X seconds, see settings to set everything)
+
+NEW Version 0.3<br>
+Modules:<br>
+- Events:
+Create an event in events/ , name it to what ever you want as a .txt, ex: arena.txt
+in it you must have this template:
+name=NAME
+description=DESCRIPTION
+goal=GOAL
+killonstart=true/false => this is made so you can empty the inventory of the people, you MUST use sleeping bags if you use this!
+spawn=X Y Z
+spawn=X Y Z
+spawn=X Y Z
+When people spawn it will be equilibrated, so if you have 9 players, there will be 3 in each (depending on how many spawns you made), this way you can easily make teams, or just put 10 spawns for 10 players if you want a free for all.
+
+Commands:<br>
+- /reward (same as give)
+- /event NAME/start/stop
+NAME = the name of the event you want to load. NAME.txt (in events/)
+- /join (Join event)
+- /leave (Leave event)
+
+Fixes:<br>
+- Fixed all the errors that i could find in the script.
