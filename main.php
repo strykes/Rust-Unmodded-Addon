@@ -46,7 +46,8 @@ while ($conn > 0)
 	{
 	  $toret = unpack("V1ID/V1Reponse/a*S1/a*S2",$packet);
 	  if(isset($toret["S1"]) && ($toret["Reponse"]==0)) $receive = $toret["S1"];
-	  echo $receive."\n";
+	  if(strlen($receive)>5)
+		  echo $receive."\n";
 	  $line = explode("\n",$receive);
 	  // CHAT LOGS
 	  if(GetVar("LOGCHAT")==1)
