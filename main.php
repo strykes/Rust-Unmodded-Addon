@@ -15,11 +15,17 @@ $started = false;
 $serverinfo = array();
 $playerlist = array();
 $timers = array();
-
+$parsingstatus = -1;
+$cutline = false;
+$lastmsg = 0;
+$checkmsg = false;
+$nummsg = 0;
+$playerlistarray = array();
+$spam = array();
 $data = pack("VV",1,03).$config["server_rcon"].chr(0).''.chr(0);
 $data = pack("V",strlen($data)).$data;
 fwrite($conn, $data, strlen($data));
-sendcmd("say \"[color #9999FF]Addon was successfully started\"");	
+//sendcmd("say \"[color #9999FF]Addon was successfully started\"");	
 
 if(GetVar("automessages")==1)
 	$timers[] = array("time"=>time()+GetVar("automessages_timers"),"repeat_time"=>GetVar("automessages_timers"),"function"=>"sendautomessage","isarray"=>false,"repeat"=>true,"args"=>"");
@@ -54,6 +60,32 @@ while ($conn > 0)
 		  if(strpos($receive,"[CHAT]") === 0)
 			  file_put_contents($config["logs_folder"]."/CHAT-".date("d-m-y",time()).".log",date("H:i:s",time()).":".substr($receive,7)."\n",FILE_APPEND);    
 	  // CHAT COMMAND HOOK
+	  if(preg_match('/\W[C][H][A][T]\W\W\W(.*?)\W\W\W(.*?)\W$/',$receive,$output))
+	  {
+		  {
+			  if(($lastmsg == time()) && !$checkmsg)
+			  {
+				 $nummsg = 0;
+				 $checkmsg = time();
+			  }
+			  if(time() - $checkmsg < 10)
+			  {
+				  $nummsg++;
+			  }
+			  else
+				$checkmsg = false;
+			  if($nummsg > 10)
+			  {
+				  if(GetVar("antiglobalspam"))
+				  {
+					  sendcmd("say \"Spam detected, please calm down\"");
+					  sendcmd("chat.enabled false");
+					  $timers[] = array("time"=>time()+5,"function"=>"sendcmd","isarray"=>false,"repeat"=>false,"args"=>"chat.enabled true");
+				  }
+			  }
+			  $lastmsg = time();
+		  }		  
+	  }
 	  if(preg_match('/\W[C][H][A][T]\W\W\W(.*?)\W\W\W\/(.*?)\W$/',$receive,$output))
 	  {
 		  chat_cmd($output[1],$output[2]);
@@ -73,7 +105,12 @@ while ($conn > 0)
 	  }
 	  elseif(isset($line) && isset($line[0]) && (strpos($line[0],"hostname:")===0))
 	  {
-		parsestatus($line);
+		  $parsingstatus = time();
+		parsestatus(str_replace(array("�","�"),"",$line));
+	  }
+	  elseif($parsingstatus == time())
+	  {
+		parsestatus_continue(str_replace(array("�","�"),"",$line));  
 	  }
 	  elseif($receive == "OnDestroy")
 	  {
@@ -109,6 +146,9 @@ while ($conn > 0)
 			//else unset($timers[$tid]);
 		}
 	}
+	print(count($playerlist)."\n");
+	//flush;
+	//ob_flush();
 }
 
 ?>
