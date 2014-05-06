@@ -1,4 +1,4 @@
-Rust-Unmodded-Addon 0.3
+Rust-Unmodded-Addon 0.4
 ===================
 
 Php Addon for Unmodded Rust servers
@@ -75,10 +75,18 @@ When people spawn it will be equilibrated, so if you have 9 players, there will 
 
 Commands:<br>
 - /reward (same as give)
-- /event NAME/start/stop
+- /event NAME/start/stop MAXNUMBEROFPLAYERS
 NAME = the name of the event you want to load. NAME.txt (in events/)
 - /join (Join event)
 - /leave (Leave event)
 
 Fixes:<br>
 - Fixed all the errors that i could find in the script.
+
+NEW Version 0.4<br>
+Modules:<br>
+- Anti Spam in chat: If it spams too much in the chat, the addon will disable chat for couple seconds then reenable it.
+
+Fixes:<br>
+- Fixed the player list, had a maximum of 41 players because the server sends in 2 or 3 parts the status if the server has more then 41 players
+- Fixed the event, added a MAX numbers of players in the command: /event NAME MAXPLAYERS
