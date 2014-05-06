@@ -154,9 +154,47 @@ function findplayer($name)
 	}
 	return array("steam"=>$foundsteam,"name"=>$foundname);
 }
+function parsestatus_continue($data)
+{
+	global $playerlist,$admins,$cutline;
+	if($cutline !== false)
+	{
+		if(!preg_match("/([0-9]{17})\W(.{36})/",$data[0],$output))
+		{
+			$data[0] = $cutline.$data[0];
+		}
+	}
+	foreach($data as $pid => $playerdata)
+	{
+		if(preg_match("/([0-9]{17})\W(.{36})/",$playerdata,$output))
+		{
+			$playerlist[$output[1]] = array("name"=>cleanname($output[2]));
+			$playerlist[$output[1]]["isadmin"] = false;
+			if(isset($admins[$output[1]]))
+				if($admins[$output[1]])
+					$playerlist[$output[1]]["isadmin"] = true;
+		}
+		else
+		{
+			//print("ERROR WHILE PARSING 1 PLAYER\n");
+			$cutline = $playerdata;
+			//print('<<'.$playerdata.'>>');
+		}
+	}
+}
+function cleanname($name)
+{
+	$tempname = $name;
+	if(strpos($name,'"')===0)
+		$tempname = substr($tempname,1);
+		
+	$tempname = substr($tempname,0,strrpos($tempname,'"'));
+	$name = $tempname;
+	return $name;
+}
 function parsestatus($data)
 {
-	global $playerlist,$admins;
+	global $playerlist,$admins,$playerlistarray,$cutline;
 	foreach($data as $did => $line)
 	{
 		if(strpos($line,"hostname")===0)
@@ -168,24 +206,25 @@ function parsestatus($data)
 		if(strpos($line,"players")===0)
 			$serverinfo["players"] = substr($line,10);
 	}
-	$playerlistarray = array_slice($data,6,count($data)-8);
+	$playerlistarray = array_slice($data,6);
 	$playerlist = array();
 	foreach($playerlistarray as $pid => $playerdata)
 	{
-		$tempname = false;
-		$playerlist[substr($playerdata,0,17)] = array(
-		"name" => substr($playerdata,19,36),
-		"ping"=>substr($playerdata,56,4),
-		"connected"=>substr($playerdata,62,11),
-		"ip"=>substr($playerdata,74,15));
-		$tempname = $playerlist[substr($playerdata,0,17)]["name"];
-		$tempname = substr($tempname,0,strrpos($tempname,'"'));
-		$playerlist[substr($playerdata,0,17)]["name"] = $tempname;
-		$playerlist[substr($playerdata,0,17)]["isadmin"] = false;
-		if(isset($admins[substr($playerdata,0,17)]))
-			if($admins[substr($playerdata,0,17)])
-				$playerlist[substr($playerdata,0,17)]["isadmin"] = true;
+		//print($playerdata);
+		if(preg_match("/([0-9]{17})\W(.{36})/",$playerdata,$output))
+		{
+			$playerlist[$output[1]] = array("name"=>cleanname($output[2]));
+			$playerlist[$output[1]]["isadmin"] = false;
+			if(isset($admins[$output[1]]))
+				if($admins[$output[1]])
+					$playerlist[$output[1]]["isadmin"] = true;
+		}
+		else
+		{
+			$cutline = $playerdata;
+		}
 	}
+	
 }
 
 function onusersuicide($name)
@@ -258,7 +297,8 @@ function onuserconnect($name,$steamid)
 			return;	
 		}
 	}
-
+	print($steamid);
+	print_r($playerlist[$steamid]);
 	if(GetJailed($steamid) !== 0)
 		$timers[] = array("steam"=>$steamid,"time"=>time()+20,"function"=>"sendcmd","isarray"=>false,"repeat"=>false,"args"=>"teleport.topos \"".$steamid."\" \"".GetVar("jail.x")."\" \"".GetVar("jail.y")."\" \"".GetVar("jail.z")."\"");
 }
