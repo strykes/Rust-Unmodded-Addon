@@ -30,7 +30,11 @@ give = 2
 broadcast_connections = 1
 restricted_names = 1
 restricted_dual_names = 1
+automessages = 1
+automessages_timers = 600
 autowarnings = 1
+antiglobalspam = 1
+antipersonnalspam = 1 ##TO BE CODED
 
 
 
@@ -39,11 +43,11 @@ autowarnings = 1
 ## jail.y = Y position
 ## jail.z = Z position
 ## i strongly advise to use rustnuts.com to try and get your position, or connect on a server with /location enabled.
-jail.x = -6940
-jail.y = 360
-jail.z = -583
+jail.x = -5630
+jail.y = 310
+jail.z = -4470
 free.x = 4786
-free.y = 598
+free.y = 597
 free.z = -4332
 
 ## SLAY SETTINGS
