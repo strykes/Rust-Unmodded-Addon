@@ -7,6 +7,11 @@ function chat_cmd($name,$text)
 	$apos = false;
 	$args = array();
 	$i = 0;
+	$debug = findplayer($name);
+	if(isset($debug[2]))
+	{
+		var_dump(findplayer($debug[2]));
+	}
 	foreach($chr as $cid => $val)
 	{
 		if($cid == 0) $args[0] = $val;
@@ -313,15 +318,32 @@ function chat_cmd($name,$text)
 						$event["opened"] = false;
 						$event["started"] = false;
 						sendcmd("say \"[color #488FAD][EVENT] ".$event["name"]." [color #FFFFFF]Is now over.\"");
+						$event = array();
+					}
+					elseif(isset($event["opened"]) && $event["opened"])
+					{
+						$event["opened"] = false;
+						$event["started"] = false;
+						sendcmd("say \"[color #488FAD][EVENT] ".$event["name"]." [color #FFFFFF]Was Canceled.\"");
 						foreach($event["players"] as $pi => $player)
 						{
-							sendcmd("teleport.topos \"".$player."\" \"".GetVar("slay.x")."\" \"".GetVar("slay.y")."\" \"".GetVar("slay.z")."\"");
+							sendcmd("teleport.topos \"".$player."\" \"".GetVar("free.x")."\" \"".GetVar("free.y")."\" \"".GetVar("free.z")."\"");
 						}
 						$event = array();
-					}	
+					}
 				}
 				else
 				{
+					if(!isset($args[2]))
+					{
+						 sendcmd("say \"Please set a max number of players\"");
+						 return;
+					}
+					if(!is_numeric($args[2]))
+					{
+						sendcmd("say \"/event EVENT MAXPLAYERS\"");
+						return;
+					}
 					$data = file_get_contents("events/".$args[1].".txt");
 					if($data !== false)
 					{
@@ -335,6 +357,7 @@ function chat_cmd($name,$text)
 						$event["players"] = array();
 						$event["killonstart"] = false;
 						$event["lastspawn"] = -1;
+						$event["maxplayers"] = $args[2];
 						$d_ = explode("\n",$data);
 						foreach($d_ as $l => $line)
 						{
@@ -365,11 +388,20 @@ function chat_cmd($name,$text)
 			{
 				if(!in_array($name,$event["players"]))
 				{
-					$event["players"][] = $name;
-					if($event["lastspawn"]>=(count($event["spawns"])-1))
-						$event["lastspawn"] = 0;
-					else $event["lastspawn"]++;
-					sendcmd("teleport.topos ".$name." ".$event["spawns"][$event["lastspawn"]]);
+					if(count($event["players"])>= $event["maxplayers"])
+					{
+						sendcmd("say \"Event is full, you may no longer join\"");
+						sendcmd("chat.enabled false");
+						$timers[] = array("time"=>time()+5,"function"=>"sendcmd","isarray"=>false,"repeat"=>false,"args"=>"chat.enabled true");
+					}
+					else
+					{
+						$event["players"][] = $name;
+						if($event["lastspawn"]>=(count($event["spawns"])-1))
+							$event["lastspawn"] = 0;
+						else $event["lastspawn"]++;
+						sendcmd("teleport.topos \"".$name."\" ".$event["spawns"][$event["lastspawn"]]);
+					}
 				}
 			}
 		break;
@@ -383,7 +415,7 @@ function chat_cmd($name,$text)
 				{
 					if($name == $playername) unset($event["players"][$ei]);	
 				}
-				sendcmd("teleport.topos \"".$name."\" \"".GetVar("slay.x")."\" \"".GetVar("slay.y")."\" \"".GetVar("slay.z")."\"");
+				sendcmd("teleport.topos \"".$player."\" \"".GetVar("free.x")."\" \"".GetVar("free.y")."\" \"".GetVar("free.z")."\"");
 			}	
 		}
 		break;
