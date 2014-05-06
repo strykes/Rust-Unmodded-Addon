@@ -55,7 +55,7 @@ free.z = -4332
 ## slay.y = Y position
 ## slay.z = Z position
 ## i strongly advise to use rustnuts.com to try and get your position, or connect on a server with /location enabled.
-## You can either put a VERY high position and let the person die from fall (wont work with flyhackers ;)), or teleport into the sea, so you they instant die and you can go loot their stuff if they stole people.
+## You can either put a VERY high position and let the person die from fall (wont work with flyhackers ;)), or teleport into the sea. IF you teleport into the sea the bag will DISAPEAR
 slay.x = 6215
 slay.y = 20
 slay.z = -5722
