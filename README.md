@@ -1,4 +1,4 @@
-Rust-Unmodded-Addon 0.4
+Rust-Unmodded-Addon 0.5
 ===================
 
 Php Addon for Unmodded Rust servers
@@ -90,3 +90,10 @@ Modules:<br>
 Fixes:<br>
 - Fixed the player list, had a maximum of 41 players because the server sends in 2 or 3 parts the status if the server has more then 41 players
 - Fixed the event, added a MAX numbers of players in the command: /event NAME MAXPLAYERS
+
+NEW Version 0.5<br>
+MYSQL Support, optionnal. Edit in configs.php the mysql informations, and in settings.php to activate or deactivate mysql
+
+Fixes:<br>
+- Fixed the jail/unjail problem, that kept the people jailed even if you freed them.
+- Improved the name searchs on execute commands.
