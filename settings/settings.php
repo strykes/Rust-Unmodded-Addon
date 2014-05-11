@@ -6,6 +6,11 @@ LOGCONNECTIONS = 1
 LOGCHAT = 1
 
 
+## MYSQL
+## setup mysql configs in config.php
+## 0 = Deactivated, 1 = Activated
+MYSQL = 1
+
 
 ## COMMANDS
 ## 0 = Deactivated, 1 = All Users, 2 = Admins only
