@@ -2,7 +2,7 @@
 
 function chat_cmd($name,$text)
 {
-	global $playerlist,$event;
+	global $playerlist,$event,$timers;
 	$chr = explode(" ",$text);
 	$apos = false;
 	$args = array();
@@ -129,9 +129,15 @@ function chat_cmd($name,$text)
 						return;
 					}
 					if(!$found2)
+					{
 						sendcmd("teleport.toplayer \"".$name."\" \"".$found["steam"]."\"");
+						$timers[] = array("time"=>time()+2,"function"=>"sendcmd","isarray"=>false,"repeat"=>false,"args"=>"teleport.toplayer \"".$name."\" \"".$found["steam"]."\"");
+					}
 					else
-						sendcmd("teleport.toplayer \"".$found["steam"]."\" \"".$found2["steam"]."\"");					
+					{
+						sendcmd("teleport.toplayer \"".$found["steam"]."\" \"".$found2["steam"]."\"");	
+						$timers[] = array("time"=>time()+2,"function"=>"sendcmd","isarray"=>false,"repeat"=>false,"args"=>"teleport.toplayer \"".$found["steam"]."\" \"".$found2["steam"]."\"");
+					}
 				}
 			}
 		break;
@@ -384,6 +390,7 @@ function chat_cmd($name,$text)
 						$event["killonstart"] = false;
 						$event["lastspawn"] = -1;
 						$event["maxplayers"] = $args[2];
+						$event["spawns_playersteam"] = array();
 						$d_ = explode("\n",$data);
 						foreach($d_ as $l => $line)
 						{
@@ -418,7 +425,7 @@ function chat_cmd($name,$text)
 					{
 						sendcmd("say \"Event is full, you may no longer join\"");
 						sendcmd("chat.enabled false");
-						$timers[] = array("time"=>time()+5,"function"=>"sendcmd","isarray"=>false,"repeat"=>false,"args"=>"chat.enabled true");
+						$timers[] = array("time"=>time()+1,"function"=>"sendcmd","isarray"=>false,"repeat"=>false,"args"=>"chat.enabled true");
 					}
 					else
 					{
@@ -427,6 +434,7 @@ function chat_cmd($name,$text)
 							$event["lastspawn"] = 0;
 						else $event["lastspawn"]++;
 						sendcmd("teleport.topos \"".$name."\" ".$event["spawns"][$event["lastspawn"]]);
+						$timers[] = array("time"=>time()+2,"function"=>"sendcmd","isarray"=>false,"repeat"=>false,"args"=>"teleport.topos \"".$name."\" ".$event["spawns"][$event["lastspawn"]]);
 					}
 				}
 			}
