@@ -137,6 +137,7 @@ function findplayer($name)
 	$foundname = false;
 	$foundexactcase = false;
 	$foundexactnocase = false;
+	$foundnotexactcase = false;
 	if(is_numeric($name) && strlen($name==17))
 	{
 		$found = 1;
@@ -161,6 +162,13 @@ function findplayer($name)
 				$foundname = $info["name"];
 			}
 			elseif((strpos($info["name"],$name)!==false) and (!$foundexactcase) and (!$foundexactnocase))
+			{
+				$found++;
+				$foundsteam = $steam;
+				$foundname = $info["name"];
+				$foundnotexactcase = true;
+			}
+			elseif((strpos(strtolower($info["name"]),strtolower($name))!==false) and (!$foundexactcase) and (!$foundexactnocase) and (!$foundnotexactcase))
 			{
 				$found++;
 				$foundsteam = $steam;
