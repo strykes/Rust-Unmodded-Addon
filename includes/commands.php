@@ -190,7 +190,7 @@ function chat_cmd($name,$text)
 					if($searchjailed === 0)
 					{
 						sendcmd("say \"".$found['name']." has been [color #FF3333]arrested[color #FFFFFF] by an admin\"");
-						file_put_contents("jailed.ini",$found['steam']." = ".$found['name']."\n",FILE_APPEND);
+						file_put_contents("jailed.ini",$found['steam']."\n",FILE_APPEND);
 						if((GetVar("jail.x") != 0) && (GetVar("jail.y") != 0) && (GetVar("jail.z") != 0))
 						{
 							sendcmd("teleport.topos \"".$found["steam"]."\" \"".GetVar("jail.x")."\" \"".GetVar("jail.y")."\" \"".GetVar("jail.z")."\"");
@@ -294,7 +294,33 @@ function chat_cmd($name,$text)
 			if(isadmin($name))
 			{
 				if(!isset($args[1])) return;
-				if($args[1]=="start")
+				if($args[1]=="howto")
+				{
+					if(!isset($args[2])) return;
+					$data = file_get_contents("events/".$args[2].".txt");
+					if($data !== false)
+					{
+						$d_ = explode("\n",$data);
+						sendcmd("chat.enabled false");
+						foreach($d_ as $l => $line)
+						{
+							$l_ = explode("=",$line);
+							switch($l_[0])
+							{
+								case "name":
+									sendcmd("say \"[color #488FAD][EVENT] ".$l_[1]." [color #FFFFFF] Instructions.\"");
+									sleep(1);
+								break;
+								case "howto":
+									sendcmd("say \"".$l_[1]."\"");
+									sleep(1);
+								break;
+							}
+						}
+						sendcmd("chat.enabled true");
+					}
+				}
+				elseif($args[1]=="start")
 				{
 					if(isset($event["opened"]) && $event["opened"])
 					{	
