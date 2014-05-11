@@ -27,7 +27,7 @@ $data = pack("V",strlen($data)).$data;
 $mysql = false;
 $dbb = false;
 fwrite($conn, $data, strlen($data));
-//sendcmd("say \"[color #9999FF]Addon was successfully started\"");	
+sendcmd("say \"[color #9999FF]Addon was successfully started\"");	
 
 if(GetVar("MYSQL") == 1)
 	$mysql = true;
