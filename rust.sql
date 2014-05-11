@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS `rust` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `type` varchar(255) CHARACTER SET latin1 NOT NULL,
+  `header` varchar(255) CHARACTER SET latin1 NOT NULL,
+  `text` varchar(255) CHARACTER SET latin1 NOT NULL,
+  `time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
