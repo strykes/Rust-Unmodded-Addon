@@ -25,7 +25,7 @@ $spam = array();
 $data = pack("VV",1,03).$config["server_rcon"].chr(0).''.chr(0);
 $data = pack("V",strlen($data)).$data;
 fwrite($conn, $data, strlen($data));
-sendcmd("say \"[color #9999FF]Addon was successfully started\"");	
+//sendcmd("say \"[color #9999FF]Addon was successfully started\"");	
 
 if(GetVar("automessages")==1)
 	$timers[] = array("time"=>time()+GetVar("automessages_timers"),"repeat_time"=>GetVar("automessages_timers"),"function"=>"sendautomessage","isarray"=>false,"repeat"=>true,"args"=>"");
@@ -69,15 +69,15 @@ while ($conn > 0)
 				 $checkmsg = time();
 			  }
 			  if(time() - $checkmsg < 10)
-			  {
 				  $nummsg++;
-			  }
 			  else
 				$checkmsg = false;
 			  if($nummsg > 10)
 			  {
 				  if(GetVar("antiglobalspam"))
 				  {
+					  $nummsg = 0;
+					  $checkmsg = false;
 					  sendcmd("say \"Spam detected, please calm down\"");
 					  sendcmd("chat.enabled false");
 					  $timers[] = array("time"=>time()+5,"function"=>"sendcmd","isarray"=>false,"repeat"=>false,"args"=>"chat.enabled true");
@@ -146,7 +146,6 @@ while ($conn > 0)
 			//else unset($timers[$tid]);
 		}
 	}
-	print(count($playerlist)."\n");
 	//flush;
 	//ob_flush();
 }
