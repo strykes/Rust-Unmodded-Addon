@@ -1,4 +1,28 @@
 <?php
+function DBB($host,$login,$pass,$db,$table)
+{
+	try
+	{
+	$pdo_options[PDO::ATTR_ERRMODE] = PDO::ERRMODE_EXCEPTION;
+	$bdd = new PDO("mysql:host=".$host.";dbname=".$db,$login,$pass, $pdo_options);
+	}
+	catch (Exception $e)
+	{
+		die('Error : ' . $e->getMessage());
+		return false;
+	}		
+	return $bdd;
+	
+}
+function put_in_mysql($dbb,$type,$header,$txt)
+{
+	global $config;
+	$header = addslashes($header);
+	$txt = addslashes($txt);
+	$dbb->exec("INSERT INTO ".$config["mysql_table"]."(type,header,text)	
+               VALUES('$type','$header','$txt')");
+	
+}
 function GetVar($var)
 {  
   $file = fopen("settings/settings.php",'r');
