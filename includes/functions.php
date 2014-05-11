@@ -52,7 +52,7 @@ function GetJailed($var)
     if(strcmp($lineEx[0],$var) == 0)
     {
      fclose($file);
-     return trim($lineEx[2]);
+     return $lineEx[0];
     }   
    }
   }  
